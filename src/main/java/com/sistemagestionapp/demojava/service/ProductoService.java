@@ -45,19 +45,21 @@ public class ProductoService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + correo));
     }
 
-    // =========================================================
+    // ==========================================================
     // LISTAR SOLO PRODUCTOS DEL USUARIO
     // =========================================================
     @Transactional(readOnly = true)
-    public List<?> listarDelUsuario(String correo) {
-        if (correo == null || correo.isBlank()) throw new IllegalArgumentException("correo obligatorio");
+    public List<Object> listarDelUsuario(String correo) {
+        if (correo == null || correo.isBlank()) {
+            throw new IllegalArgumentException("correo obligatorio");
+        }
 
         if (isMongo()) {
             if (productoMongoRepository == null) {
                 throw new IllegalStateException("ProductoMongoRepository no disponible (perfil mongo mal configurado)");
             }
-            // ✅ en Mongo usamos correo como usuarioId
-            return productoMongoRepository.findByUsuarioId(correo);
+
+            return List.copyOf(productoMongoRepository.findByUsuarioId(correo));
         }
 
         if (productoRepository == null) {
@@ -65,7 +67,8 @@ public class ProductoService {
         }
 
         Usuario propietario = usuarioSqlObligatorio(correo);
-        return productoRepository.findByPropietario(propietario);
+
+        return List.copyOf(productoRepository.findByPropietario(propietario));
     }
 
     // =========================================================
